@@ -25,7 +25,32 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var tab=0;
   var urlData=[];
-  var userImage;
+  var userImage; //사용자 입력 이미지 수집
+  var userContent; //유저 입력 콘텐트 수집 자식이 부모 변수 수정 (함수로 수정함수 보내기)
+
+  addMyData(){
+    var myData={
+      'id':urlData.length,
+      'image':userImage,
+      'likes':5,
+      'date' : 'July 25',
+      'content': userContent,
+      'liked':false,
+      'user':'DasKim'
+    };
+
+    setState(() {
+      urlData.insert(0,myData);
+    });
+  }
+
+
+  setUserContent(a){
+    setState(() {
+      userContent=a;
+    });
+  }
+
 
   getData() async{
     var result = await http.get(Uri.parse('https://codingapple1.github.io/app/data.json'));
@@ -61,7 +86,9 @@ class _MyAppState extends State<MyApp> {
                 });}
 
               Navigator.push(context,
-                MaterialPageRoute(builder: (c)=> Upload(userImage:userImage)));
+                MaterialPageRoute(builder: (c)=> Upload(
+                    userImage:userImage, setUserContent: setUserContent,
+                    addMyData:addMyData)));
             },),
         ],
       ),
@@ -154,26 +181,34 @@ class _HomeState extends State<Home> {
 }
 
 class Upload extends StatelessWidget {
-  Upload({Key? key, this.userImage}) : super(key:key);
+  Upload({Key? key, this.userImage, this.setUserContent, this.addMyData}) : super(key:key);
   final userImage;
+  final setUserContent;
+  final addMyData;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset:true,
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions:[IconButton(onPressed: (){}, icon: Icon(Icons.send))]
+      ),
       body:SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.file(userImage),
-            TextField(),
+            TextField(
+              onChanged: (text)
+              {setUserContent(text);}
+            ),
             Text('이미지 업로드 화면'),
             IconButton(onPressed: (){
               Navigator.pop(context);
             }, icon: Icon(Icons.close)),
             TextButton(onPressed: (){
-              //여기다가 발행 기능 만들 것
+              addMyData();
+              Navigator.pop(context);
             }, child: Text('발행'))
           ],
         ),
